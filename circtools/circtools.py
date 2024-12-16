@@ -57,6 +57,7 @@ class CircTools(object):
                reconstruct:  circular RNA reconstruction
                enrich:       circular RNA RBP enrichment scan
                exon:         circular RNA alternative exon analysis
+               test:         just a test
             """)
         parser.add_argument("command", help="Command to run")
 
@@ -1077,6 +1078,34 @@ class CircTools(object):
         reconstruct_instance = reconstruct.reconstruct.Reconstruct(args, program_name, version)
         reconstruct_instance.run_module()
 
+    @staticmethod
+    def test():
+        parser = argparse.ArgumentParser(
+            description="making bed file"
+            )
+        # REQUIRED ARGUMENTS
+        group = parser.add_argument_group("Testmodule ", "just for test")
+
+        group.add_argument('-f', dest='filepath', type=str ,
+                            help = 'file path', required = True)
+
+        group.add_argument('-st', dest='starpath', type = str,
+                            help = 'Star output Paths', required = True)
+        group.add_argument('-m', dest='multiplier', type=int,
+                           help='multiplier', default=1000000)
+
+        parser.add_argument_group(group)
+        #print(sys.argv[2:])
+        args = parser.parse_args(sys.argv[2:])
+
+        #args = parser.parse_args()
+        #print(args)
+        # make sure we can load the sub module
+        sys.path.append(os.path.join(os.path.dirname(__file__)))
+
+        import testmodule.testmodule
+        test_instance = testmodule.testmodule.TestModule(args,program_name, version)
+        test_instance.run_module()
 
 if __name__ == "__main__":
     main()
