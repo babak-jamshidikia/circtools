@@ -81,12 +81,13 @@ class TestModule(circ_module.circ_template.CircTemplate):
 
             #print(starfilepath+"/"+ outfilelist[i] +"/Log.final.out")
             for line in f:                                                  # walking in star log file line by line
-                match = re.match(" *Number of input reads *", line)  # check if the loaded line containing  "Number of input reads"
-                if match:                                                   # if  the checked line in TRUE?
-                    reads = re.findall("\d+", line)                  # invoke the maximum reads
-                    maxread.append(reads[0])                                # append the maximum, reads number to the list
+                match = re.search(" *Number of input reads+ \|\t(\d+)", line)
+                if match:
+                    maxread.append(match.group(1))  # append the maximum, reads number to the list
+                    break
 
-            print( "   "+ str(outfilelist[i]) +  " \t " +   str(reads[0])  )
+
+#            print( "   "+ str(outfilelist[i]) +  " \t " +   str(reads[0])  )
             f.close()
 
         i = 1
