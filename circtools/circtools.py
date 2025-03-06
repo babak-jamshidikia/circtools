@@ -57,6 +57,7 @@ class CircTools(object):
                reconstruct:  circular RNA reconstruction
                enrich:       circular RNA RBP enrichment scan
                exon:         circular RNA alternative exon analysis
+               circhemy:     Rest API query
                test:         just a test
             """)
         parser.add_argument("command", help="Command to run")
@@ -1106,6 +1107,47 @@ class CircTools(object):
         import testmodule.testmodule
         test_instance = testmodule.testmodule.TestModule(args,program_name, version)
         test_instance.run_module()
+
+
+    @staticmethod
+    def circhemy():
+        parser = argparse.ArgumentParser(
+            description="Rest API query",
+            usage = ""
+        )
+        # REQUIRED ARGUMENTS
+        group = parser.add_argument_group("circhemy ", "Rest API query")
+
+        group.add_argument('-f', dest='filepath', type=str,
+                           help='file path', required=True)
+
+        # group.add_argument('-d', dest='requestdata', type=str,
+        #                    help="Bank or array request abreviation :",required=True)
+        #group.add_argument('-m', dest='multiplier', type=int,
+        #                  help='multiplier', default=1000000)
+        group.add_argument('-d', dest='requestdata', type=str,
+                           choices=["csn","cba","cpd","gen","cal","rci","ens","crn","erb","ent","cbn","ast","des","dbs","pub"],
+                           nargs="+",
+                           help="Choose one or more items -space separated- (csn : CSNv1,cba : CircBase :,cpd : Circpedia2,gen : Gene,cal : CircAtlas2,rci : riboCIRc ,ens : ENSEMBL ,crn : circRNADb ,erb : exoRBase2 ,ent : Entrez ,cbn : CircBank ,ast : ArrayStar ,des : Description,dbs : deepBase2 ,pub : Pumed )",
+                           required=True)
+        group.add_argument('-i', dest='infile', type=str,
+                           help='Input file name default = CircCoordinates', default='CircCoordinates')
+
+        group.add_argument('-o', dest='oufile', type=str,
+                         help='Output file name default = circpediacircCoordinte', default='circpediacircCoordinte')
+
+        parser.add_argument_group(group)
+        # print(sys.argv[2:])
+        args = parser.parse_args(sys.argv[2:])
+
+        #args = parser.parse_args()
+        #print(args)
+        # make sure we can load the sub module
+       # sys.path.append(os.path.join(os.path.dirname(__file__)))
+
+        import circhemy.circhemy
+        circhemy_instance = circhemy.circhemy.Circhemy(args, program_name, version)
+        circhemy_instance.run_module()
 
 if __name__ == "__main__":
     main()
