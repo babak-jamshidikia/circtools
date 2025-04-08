@@ -1134,7 +1134,7 @@ class CircTools(object):
                            help='Input file name default = CircCoordinates', default='CircCoordinates')
 
         group.add_argument('-o', dest='oufile', type=str,
-                         help='Output file name default = circpediacircCoordinte', default='circpediacircCoordinte')
+                         help='Output file name default = circpediacircCoordinte', default='CircCoordinates_annotated')
 
         parser.add_argument_group(group)
         # print(sys.argv[2:])
