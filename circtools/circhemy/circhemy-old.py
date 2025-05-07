@@ -57,42 +57,28 @@ class Circhemy(circ_module.circ_template.CircTemplate):
         requestdata = options.requestdata
         infile = str(options.infile)
         outfile = str(options.oufile)
-        Genome = options.Genome[0]
 
-        # print("filepath: " + filepath + " request : " + requestdata + "Genome : " + Genome)
-        # print("Genome : " + Genome[0])
-        # exit()
-
+#        print("filepath: " + filepath + " request : " + requestdata )
         #filepath = "/home/bjamshidikia/circtoolsdata"
         url = "https://circhemy.jakobilab.org/api/query"
-        server = "https://rest.ensembl.org"
-        ext = "/lookup/symbol/mus_musculus"
-
         try:
             page = requests.get(url)
 #           print(page.status_code )
         except requests.exceptions.ConnectionError as err :  #HTTPError as err:
-            print("Error in circhemy URL Connection")
+            print("Error in URL Connection")
             exit()
-
-        try:
-            page = requests.get(server)
-        except requests.exceptions.ConnectionError as err :
-            print("Error in ensemble URL Connection")
-            exit()
-
         headers = {
             "accept": "application/json",
             "Content-Type": "application/json"
         }
 
-        if os.path.isfile(filepath + "/" + infile) == True:  # openning circCoordinate/main input  file
+        if os.path.isfile(filepath + "/" + infile) == True:
             CircCoordinate = open(filepath +"/"+ infile, "r")
         else:
             print("File "+ infile +" not found ")
             exit()
         line = CircCoordinate.readline()  # sending the file pointer to the second line for the first read
-
+        # print(line)
 
         # writing header line
 
@@ -123,8 +109,7 @@ class Circhemy(circ_module.circ_template.CircTemplate):
         outstring = ""
         requestarray = requestdata # requestdata.split(',')
         outfildslist = []
-        lsgenes = []
-        # print(outstring)
+        print(outstring)
         for item in requestarray :
             if item in abbreviationdict.keys():
                 outstring = outstring + ',"' + abbreviationdict[item] + '"'
@@ -132,14 +117,9 @@ class Circhemy(circ_module.circ_template.CircTemplate):
                 outfildslist.append(abbreviationdict[item])
             else :
                 print ("error in abbreviations")
-                w.close()  # closing the last output file
-                CircCoordinate.close()  # closing the input file CircCoordinate
                 exit()
 
         outstring= outstring[1:]
-        wlist.append("description")
-        wlist.append("biotype")
-        wlist.append("id")
         wline = "\t".join(wlist)
         w.write(wline + "\n")
     #    print("header is : " + wline)
@@ -150,7 +130,6 @@ class Circhemy(circ_module.circ_template.CircTemplate):
         chrstart = spline[1]  # "36341370"
         chrstop = spline[2]  # "36349255"
         chrStrand = spline[5]
-        lsgenes.append('"' + spline[3]+'"')
         while True:
             if not line:
                 break
@@ -158,12 +137,11 @@ class Circhemy(circ_module.circ_template.CircTemplate):
             data = '{"input": [{"query": "' + chromosome + '", "field": "Chr", "operator1": "AND", "operator2": "is"},' \
                                                        '{"query": "' + chrstart + '", "field": "Start", "operator1": "AND", "operator2": "is"},' \
                                                        '{"query": "' + chrstop + '", "field": "Stop", "operator1": "AND", "operator2": "is"},' \
-                                                       '{"query": "' + Genome + '", "field": "Genome", "operator1": "AND", "operator2": "is"}'
+                                                       '{"query": "' + chrStrand + '", "field": "Strand", "operator1": "AND", "operator2": "is"}'
         
 
             lsreadlines = []
             lsreadlines.append([spline[0:8]])
-
 
 
             for i in range(0, 500):
@@ -178,16 +156,14 @@ class Circhemy(circ_module.circ_template.CircTemplate):
                 chrstart = spline[1]  # "36341370"
                 chrstop = spline[2]  # "36349255"
                 chrStrand = spline[5]
-                lsgenes.append('"' + spline[3] + '"')
 
                 #    print("chr : "+ chromosome + " Start : " + chrstart + " Stop : " + chrstop  )
                 data1 = ',{"query": "' + chromosome + '", "field": "Chr", "operator1": "OR", "operator2": "is"},' \
                         '{"query": "' + chrstart + '", "field": "Start", "operator1": "AND", "operator2": "is"},' \
-                        '{"query" : "' + chrstop + '", "field": "Stop", "operator1": "AND", "operator2": "is"},' \
-                        '{"query": "' + Genome + '", "field": "Genome", "operator1": "AND", "operator2": "is"}'
+                        '{"query": "' + chrstop + '", "field": "Stop", "operator1": "AND", "operator2": "is"},' \
+                        '{"query": "' + chrStrand + '", "field": "Strand", "operator1": "AND", "operator2": "is"}'
                 data = data + data1
-                # print(data)
-                # exit()
+                #    print(data)
                 lsreadlines.append([spline[0:8]])
                 i += 1
 
@@ -196,35 +172,18 @@ class Circhemy(circ_module.circ_template.CircTemplate):
             data = data + ' "output": ['+ outstring +',"Chr","Start","Stop","Strand"]}'
 
             #data ={"input": [{"query": "chr1", "field": "Chr", "operator1": "AND", "operator2": "is"},{"query": "935772", "field": "Start", "operator1": "AND", "operator2": "is"},{"query": "939412", "field": "Stop", "operator1": "AND", "operator2": "is"},{"query": "+", "field": "Strand", "operator1": "AND", "operator2": "is"},{"query": "chr1", "field": "Chr", "operator1": "OR", "operator2": "is"},{"query": "3740233", "field": "Start", "operator1": "AND", "operator2": "is"},{"query": "3746186", "field": "Stop", "operator1": "AND", "operator2": "is"},{"query": "+", "field": "Strand", "operator1": "AND", "operator2": "is"}], "output": ["Circpedia2","Chr","Start","Stop","Strand"]}
-
-            strgenes =  ",".join(lsgenes)
             # print(data)
-            # exit()
-            try: # reading circhemy data
+            #exit()
+            try:
                 response = requests.post(url, data=data, headers=headers)
                 jsondata = response.json()
+                # print(response.json())
+                # exit()
                 listrecords.append(len(jsondata["rowData"]))
-#                print(str(len(jsondata["rowData"])))
-
             except KeyError as err :
-                print ( "There is a rowData key error in Circhemy data ")
-                w.close()  # closing the last output file
-                CircCoordinate.close()  # closing the input file CircCoordinate
+                print ( "There is a rowData key error ")
                 exit()
-
-            strdata = '{ "symbols" : ['+ strgenes + ']}'
-
-            try: # reading ensemble data
-                r = requests.post(server + ext, headers=headers, data=strdata)
-
-            except KeyError as err:
-                print("There is a rowData key error  in ensemble data ")
-                w.close()  # closing the last output file
-                CircCoordinate.close()  # closing the input file CircCoordinate
-                exit()
-
-            decoded = r.json()
-
+                # print(err)
     #       CircCoordinate.seek(0, 0)
     #        lsreadlines = []
     #       jsondata = {}
@@ -237,12 +196,11 @@ class Circhemy(circ_module.circ_template.CircTemplate):
                 chrstart = lsreadlines[i][0][1]
                 chrstop= lsreadlines[i][0][2]
                 chrstrand = lsreadlines[i][0][5]
-                genename  = lsreadlines[i][0][3]
                 # print(str(len(jsondata["rowData"])))
                 for j in range(0,len(jsondata["rowData"])):
                     jj = jsondata["rowData"][j]#["Circpedia2"]
-                    # print( str(jsondata["rowData"][j]["Chr"]) + " , " + str(jsondata["rowData"][j]["Start"]) + " , " + str(jsondata["rowData"][j]["Stop"]))
-                    if str(jsondata["rowData"][j]["Chr"]).strip() == chromosome.strip() and str(jsondata["rowData"][j]["Start"]).strip() == chrstart.strip() and str(jsondata["rowData"][j]["Stop"]).strip() == chrstop.strip(): #and str(jsondata["rowData"][j]["Strand"]).strip() == chrstrand.strip()  :
+                    print( str(jsondata["rowData"][j]["Chr"]) + " , " + str(jsondata["rowData"][j]["Start"]) + " , " + str(jsondata["rowData"][j]["Stop"]))
+                    if str(jsondata["rowData"][j]["Chr"]).strip() == chromosome.strip() and str(jsondata["rowData"][j]["Start"]).strip() == chrstart.strip() and str(jsondata["rowData"][j]["Stop"]).strip() == chrstop.strip() and str(jsondata["rowData"][j]["Strand"]).strip() == chrstrand.strip()  :
                         #print( " circpedia2: "+ str(jsondata["rowData"][j]["Circpedia2"]))
                         strcircpedia = ""
                         for item in outfildslist:
@@ -251,31 +209,24 @@ class Circhemy(circ_module.circ_template.CircTemplate):
                                 strcircpedia =  strcircpedia+"\t" + str(jsondata["rowData"][j][item])
                             else:
                                 strcircpedia = strcircpedia + "\t" + "N/A"
+
+
                     j +=1
-
-                lsreadlines[i][0].append(strcircpedia[1:])
-                if decoded.get(genename) != None :  # appending ensemble annotations to the results list
-                    lsreadlines[i][0].append(str(decoded[genename]["description"]))
-                    lsreadlines[i][0].append(str(decoded[genename]["biotype"]))
-                    lsreadlines[i][0].append(str(decoded[genename]["id"]))
-                else :
-                    lsreadlines[i][0].append("N/A")
-                    lsreadlines[i][0].append("N/A")
-                    lsreadlines[i][0].append("N/A")
+                # print(strcircpedia)
+                lsreadlines[i][0].append(strcircpedia)
 
 
-                wline = "\t".join(lsreadlines[i][0])  # making write string
+                wline = "\t".join(lsreadlines[i][0])
 
                 w.write( wline + "\n" )     # write the tab delimited string in the appropriate file
                 strcircpedia = ""
-                wline = []
                 i += i
             # w.write("---------------------------\n")
 
     #closing files
         w.close()               #closing the last output file
         CircCoordinate.close()  # closing the input file CircCoordinate
-
+#       CircRNACount.close()    # closing the input file CircRNACount
 
 
 

@@ -1135,13 +1135,19 @@ class CircTools(object):
 
         group.add_argument('-o', dest='oufile', type=str,
                          help='Output file name default = circpediacircCoordinte', default='CircCoordinates_annotated')
+        group.add_argument('-GN', dest='Genome', type=str,
+                           choices=["hg19","hg38","mm10","mm9","rn5","rn6"],
+                           nargs="+",
+                           help="Choose only one  item ",
+                           required=True)
 
         parser.add_argument_group(group)
         # print(sys.argv[2:])
         args = parser.parse_args(sys.argv[2:])
 
         #args = parser.parse_args()
-        #print(args)
+        # print(args)
+        # exit()
         # make sure we can load the sub module
        # sys.path.append(os.path.join(os.path.dirname(__file__)))
 
